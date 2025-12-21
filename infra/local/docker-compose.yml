@@ -1,0 +1,190 @@
+services:
+
+  #===============================================================
+  #                         APPLICATIONS
+  #===============================================================
+  admin_panel:
+    restart: always
+    build: ../../images/admin-panel/
+    command: >
+      sh -c "cd /app/src/
+      && uv run manage.py migrate --noinput
+      && uv run manage.py createsuperuser --noinput || true
+      && uv run manage.py startup_elastic
+      && uv run manage.py startup_mongo
+      && uv run manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ../../images/admin-panel/:/app/
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - "DJANGO_SUPERUSER_USERNAME=admin"
+      - "DJANGO_SUPERUSER_EMAIL=admin@gmail.com"
+      - "DJANGO_SUPERUSER_PASSWORD=root"
+      - "SECRET_KEY=secretkey"
+      - "DEBUG=True"
+      - "DB_NAME=movies"
+      - "DB_USER=postgres"
+      - "DB_PASSWORD=postgres"
+      - "DB_HOST=movies_db"
+      - "DB_PORT=5432"
+    depends_on:
+      movies_db:
+        condition: service_healthy
+      elastic:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  movies_api:
+    restart: always
+    build: ../../images/async-api/
+    command: >
+      sh -c "cd /app/src/
+      && uv run main.py"
+    volumes:
+      - ../../images/async-api:/app/
+    environment:
+      - "FASTAPI_PORT=3000"
+      - "ELASTIC_HOST=elastic"
+      - "ELASTIC_PORT=9200"
+      - "REDIS_HOST=redis"
+      - "REDIS_PORT=6379"
+      - "REDIS_DB=1"
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      elastic:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  auth:
+    restart: always
+    build: ../../images/auth/
+    command: >
+      sh -c "uv run alembic upgrade head
+      && cd /app/src/
+      && uv run main.py"
+    volumes:
+      - ../../images/auth/:/app/
+    expose:
+      - "5000"
+    ports:
+      - "5000:5000"
+    environment:
+      - "JWT_SECRET_KEY=jwtsecretkey"
+      - "SECRET_KEY=secretkey"
+      - "FASTAPI_PORT=5000"
+      - "DEBUG=True"
+      - "DB_NAME=auth"
+      - "DB_USER=postgres"
+      - "DB_PASSWORD=postgres"
+      - "DB_HOST=auth_db"
+      - "DB_PORT=5432"
+      - "REDIS_HOST=redis"
+      - "REDIS_PORT=6379"
+      - "REDIS_DB=1"
+
+  movies_ugc:
+    restart: always
+    build: ../../images/ugc/
+    command: >
+      sh -c "cd /app/src/
+      && uv run main.py"
+    volumes:
+      - ../../images/ugc/:/app/
+    environment:
+      - "FASTAPI_PORT=8080"
+      - "MONGO_PORT=27017"
+      - "DEBUG=True"
+      - "JWT_SECRET_KEY=jwtsecretkey"
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  #===============================================================
+  #                          DATASTORES
+  #===============================================================
+  elastic:
+    image: elasticsearch:9.2.0
+    expose:
+      - "9200"
+    ports:
+      - "9200:9200"
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    healthcheck:
+      test: curl -s http://elastic:9200 >/dev/null || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 100
+
+  movies_db:
+    build: ../../images/admin-panel/infra/postgres/
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - "POSTGRES_DB=movies"
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=postgres"
+    volumes:
+        - movies_db_volume:/var/lib/postgresql/data/
+    healthcheck:
+      test: pg_isready --dbname=movies --username=postgres
+      interval: 5s
+      timeout: 5s
+      retries: 100
+
+  auth_db:
+    image: postgres:16-alpine
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      - "POSTGRES_DB=auth"
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=postgres"
+    volumes:
+        - auth_db_volume:/var/lib/postgresql/data/
+    healthcheck:
+      test: pg_isready --dbname=auth --username=postgres
+      interval: 5s
+      timeout: 5s
+      retries: 100
+
+  mongo:
+    image: mongo:8.0.1
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok'
+      interval: 5s
+      timeout: 5s
+      retries: 100
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+      timeout: 5s
+      retries: 100
+
+volumes:
+  movies_db_volume:
+  auth_db_volume:

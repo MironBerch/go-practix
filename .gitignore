@@ -1,0 +1,72 @@
+# environment
+
+.venv
+.env
+env
+
+# python
+
+*.pyc
+*.pyo
+__pycache__/
+
+# logging
+
+logs/
+*.log
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# pytest
+
+*.pytest_cache
+
+# terraform
+.terraform
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+terraform.tfvars
+terraform.tfstate
+terraform.tfstate.backup
+output.txt
+
+# frontend
+node_modules
+dist
+dist-ssr
+*.local
+
+# editor directories and files
+.vscode
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# test binary, built with `go test -c`
+*.test
+
+# output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# dependency directories
+vendor/
+
+# go workspace file
+go.work
+go.work.sum

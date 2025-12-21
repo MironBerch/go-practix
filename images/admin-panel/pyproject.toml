@@ -1,0 +1,65 @@
+[project]
+name = "admin-panel"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django==5.1.7",
+    "django-filter==25.1",
+    "elasticsearch>=9.2.0",
+    "gunicorn==23.0.0",
+    "psycopg2-binary==2.9.10",
+    "pymongo>=4.15.5",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "django-stubs>=5.2.1",
+    "flake8>=7.3.0",
+    "flake8-pyproject>=1.2.3",
+    "isort>=6.0.1",
+    "mypy>=1.16.1",
+    "wemake-python-styleguide>=1.2.0",
+]
+
+[tool.flake8]
+max-line-length = 100
+exclude = [".venv", "*/migrations/*.py"]
+
+[tool.isort]
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+use_parentheses = true
+skip_glob = [".venv"]
+default_section = "THIRDPARTY"
+src_paths = ["src"]
+known_django = ["django"]
+sections = [
+    "FUTURE",
+    "STDLIB",
+    "THIRDPARTY",
+    "DJANGO",
+    "FIRSTPARTY",
+    "LOCALFOLDER"
+]
+
+[tool.black]
+line-length = 100
+exclude = '\.venv/'
+skip-string-normalization = true
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+show_error_codes = true
+warn_unused_ignores = true
+exclude = "(^|/)(.venv|migrations)/"
+namespace_packages = true
+ignore_missing_imports = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "src.config"
