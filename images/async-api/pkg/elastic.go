@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
     "log"
     "github.com/elastic/go-elasticsearch/v9"
 	"async-api/internal/config"
@@ -15,7 +16,7 @@ func SetupElasticClient(cfg config.Config) (*elasticsearch.Client, error) {
     
     es, err := elasticsearch.NewClient(esCfg)
     if err != nil {
-        return nil, log.Errorf("Error creating client: %s", err)
+        return nil, fmt.Errorf("Error creating client: %s", err)
     }
 
     log.Println(es.Info())
