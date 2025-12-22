@@ -47,10 +47,12 @@ services:
     environment:
       - "ELASTIC_HOST=elastic"
       - "ELASTIC_PORT=9200"
+      - "ELASTIC_USER=elastic"
       - "REDIS_HOST=redis"
       - "REDIS_PORT=6379"
       - "REDIS_DB=1"
       - "APP_ENV=development"
+      - "HTTP_PORT=3000"
     expose:
       - "3000"
     ports:

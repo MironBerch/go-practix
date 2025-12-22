@@ -1,9 +1,10 @@
 package main
 
 import (
-  "log"
-  "net/http"
-  "encoding/json"
+	"async-api/internal/config"
+	"encoding/json"
+	"log"
+	"net/http"
 )
 
 type healthzResponse struct {
@@ -24,7 +25,12 @@ func healthzHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+  cfg, err := config.Load()
+  if err != nil {
+    log.Fatal(err)
+  }
+
   http.HandleFunc("/healthz", healthzHandler)
 
-  log.Fatal(http.ListenAndServe(":3000", nil))
+  log.Fatal(http.ListenAndServe(":" + cfg.HTTP.Port, nil))
 }
