@@ -1,15 +1,25 @@
-FROM python:3.13-alpine
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+# Этап сборки
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock* ./
+# Копируем файлы модулей
+COPY go.mod go.sum ./
+RUN go mod download
 
-RUN uv sync
-
+# Копируем исходный код
 COPY . .
+
+# Собираем приложение
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
+
+# Финальный этап
+FROM alpine:latest
+
+WORKDIR /root/
+
+# Копируем бинарник из builder
+COPY --from=builder /app/main .
+
+# Запускаем приложение
+CMD ["./main"]

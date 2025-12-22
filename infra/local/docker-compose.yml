@@ -41,18 +41,16 @@ services:
   movies_api:
     restart: always
     build: ../../images/async-api/
-    command: >
-      sh -c "cd /app/src/
-      && uv run main.py"
     volumes:
       - ../../images/async-api:/app/
+      - go-modules:/go/pkg/mod
     environment:
-      - "FASTAPI_PORT=3000"
       - "ELASTIC_HOST=elastic"
       - "ELASTIC_PORT=9200"
       - "REDIS_HOST=redis"
       - "REDIS_PORT=6379"
       - "REDIS_DB=1"
+      - "APP_ENV=development"
     expose:
       - "3000"
     ports:
@@ -188,3 +186,4 @@ services:
 volumes:
   movies_db_volume:
   auth_db_volume:
+  go-modules:
