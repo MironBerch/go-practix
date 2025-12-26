@@ -6,10 +6,10 @@ import (
 )
 
 type Config struct {
-	App      AppConfig
-	HTTP     HTTPConfig
-	Elastic  ElasticConfig
-	Redis    RedisConfig
+	App     AppConfig
+	HTTP    HTTPConfig
+	Elastic ElasticConfig
+	Redis   RedisConfig
 }
 
 type AppConfig struct {
@@ -28,9 +28,9 @@ type CORSConfig struct {
 }
 
 type RedisConfig struct {
-	Host     string
-	Port     string
-	DB       string
+	Host string
+	Port string
+	DB   string
 }
 
 type ElasticConfig struct {
@@ -54,9 +54,9 @@ func Load() (*Config, error) {
 			},
 		},
 		Redis: RedisConfig{
-			Host:     getEnv("REDIS_HOST"),
-			Port:     getEnv("REDIS_PORT"),
-			DB:       getEnv("REDIS_DB"),
+			Host: getEnv("REDIS_HOST"),
+			Port: getEnv("REDIS_PORT"),
+			DB:   getEnv("REDIS_DB"),
 		},
 		Elastic: ElasticConfig{
 			Host:     getEnv("ELASTIC_HOST"),
